@@ -34,7 +34,7 @@ func main() {
 	}
 
 	if *remoteFlag {
-		cmd := exec.Command("git", "remote", "update")
+		cmd := exec.Command("git", "remote", "update", "--prune")
 		out, err := cmd.CombinedOutput()
 		if err != nil {
 			fmt.Fprintln(os.Stderr, "git remote update failed:", err)
