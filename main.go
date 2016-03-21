@@ -1,4 +1,4 @@
-// Command git-branches prints the commit behind/ahead counts for branches.
+// git-branches prints the commit behind/ahead counts for branches.
 package main
 
 import (
