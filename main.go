@@ -10,8 +10,6 @@ import (
 	"path/filepath"
 
 	"github.com/shurcooL/markdownfmt/markdown"
-	"github.com/shurcooL/vcsstate"
-	"golang.org/x/tools/go/vcs"
 )
 
 var (
@@ -40,14 +38,6 @@ func run() error {
 	if err != nil {
 		return err
 	}
-	vcs, err := vcsstate.NewVCS(vcs.ByCmd("git"))
-	if err != nil {
-		return err
-	}
-	localBranch, err := vcs.Branch(dir)
-	if err != nil {
-		return err
-	}
 
 	if *remoteFlag {
 		cmd := exec.Command("git", "remote", "update", "--prune")
@@ -61,9 +51,12 @@ func run() error {
 	var branches string
 	switch *remoteFlag {
 	case false:
-		branches = Branches(dir, localBranch, BranchesOptions{Base: *baseFlag})
+		branches, err = Branches(dir, BranchesOptions{Base: *baseFlag})
 	case true:
-		branches = BranchesRemote(dir, localBranch)
+		branches, err = BranchesRemote(dir)
+	}
+	if err != nil {
+		return err
 	}
 
 	formatted, err := markdown.Process("", []byte(branches), nil)

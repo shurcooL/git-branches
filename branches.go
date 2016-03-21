@@ -8,6 +8,8 @@ import (
 
 	"github.com/shurcooL/go/pipe_util"
 	"github.com/shurcooL/go/trim"
+	"github.com/shurcooL/vcsstate"
+	"golang.org/x/tools/go/vcs"
 	"gopkg.in/pipe.v2"
 )
 
@@ -23,9 +25,20 @@ func (opt *BranchesOptions) fillMissing() {
 	}
 }
 
-// Branches returns a Markdown table of branches with ahead/behind information relative to master branch.
-func Branches(dir string, localBranch string, opt BranchesOptions) string {
+// Branches returns a Markdown table of branches with ahead/behind information relative to master branch,
+// for a git repository in dir.
+func Branches(dir string, opt BranchesOptions) (string, error) {
 	opt.fillMissing()
+
+	vcs, err := vcsstate.NewVCS(vcs.ByCmd("git"))
+	if err != nil {
+		return "", err
+	}
+	localBranch, err := vcs.Branch(dir)
+	if err != nil {
+		return "", err
+	}
+
 	branchInfo := func(line []byte) []byte {
 		branch := trim.LastNewline(string(line))
 		branchDisplay := branch
@@ -56,9 +69,9 @@ func Branches(dir string, localBranch string, opt BranchesOptions) string {
 
 	out, err := pipe_util.OutputDir(p, dir)
 	if err != nil {
-		return err.Error()
+		return "", err
 	}
-	return string(out)
+	return string(out), nil
 }
 
 // Input is a line containing tab-separated local branch and remote branch.
@@ -95,8 +108,18 @@ func branchRemoteInfo(dir string, localBranch string) func(line []byte) []byte {
 	}
 }
 
-// BranchesRemote returns a Markdown table of branches with ahead/behind information relative to remote.
-func BranchesRemote(dir string, localBranch string) string {
+// BranchesRemote returns a Markdown table of branches with ahead/behind information relative to remote,
+// for a git repository in dir.
+func BranchesRemote(dir string) (string, error) {
+	vcs, err := vcsstate.NewVCS(vcs.ByCmd("git"))
+	if err != nil {
+		return "", err
+	}
+	localBranch, err := vcs.Branch(dir)
+	if err != nil {
+		return "", err
+	}
+
 	p := pipe.Script(
 		pipe.Println("Branch | Remote | Behind | Ahead"),
 		pipe.Println("-------|--------|-------:|:-----"),
@@ -108,7 +131,7 @@ func BranchesRemote(dir string, localBranch string) string {
 
 	out, err := pipe_util.OutputDir(p, dir)
 	if err != nil {
-		return err.Error()
+		return "", err
 	}
-	return string(out)
+	return string(out), nil
 }
