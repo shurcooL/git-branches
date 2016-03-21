@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 
 	"github.com/shurcooL/markdownfmt/markdown"
+	"golang.org/x/crypto/ssh/terminal"
 )
 
 var (
@@ -59,7 +60,8 @@ func run() error {
 		return err
 	}
 
-	formatted, err := markdown.Process("", []byte(branches), nil)
+	stdout := int(os.Stdout.Fd())
+	formatted, err := markdown.Process("", []byte(branches), &markdown.Options{Terminal: terminal.IsTerminal(stdout)})
 	if err != nil {
 		return err
 	}
