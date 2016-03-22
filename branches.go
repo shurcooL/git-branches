@@ -6,7 +6,7 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/shurcooL/go/pipe_util"
+	"github.com/shurcooL/go/pipeutil"
 	"github.com/shurcooL/go/trim"
 	"github.com/shurcooL/vcsstate"
 	"golang.org/x/tools/go/vcs"
@@ -67,7 +67,7 @@ func Branches(dir string, opt BranchesOptions) (string, error) {
 		),
 	)
 
-	out, err := pipe_util.OutputDir(p, dir)
+	out, err := pipeutil.OutputDir(p, dir)
 	if err != nil {
 		return "", err
 	}
@@ -129,7 +129,7 @@ func BranchesRemote(dir string) (string, error) {
 		),
 	)
 
-	out, err := pipe_util.OutputDir(p, dir)
+	out, err := pipeutil.OutputDir(p, dir)
 	if err != nil {
 		return "", err
 	}
