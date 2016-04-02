@@ -1,5 +1,4 @@
-git-branches
-============
+# git-branches [![Build Status](https://travis-ci.org/shurcooL/git-branches.svg?branch=master)](https://travis-ci.org/shurcooL/git-branches) [![GoDoc](https://godoc.org/github.com/shurcooL/git-branches?status.svg)](https://godoc.org/github.com/shurcooL/git-branches)
 
 git-branches is a go gettable command that displays branches with behind/ahead commit counts. If you've used GitHub, you'll notice their branches page displays this info. This is that, but for your local git repo, in the terminal.
 
@@ -38,3 +37,15 @@ $ git-branches -remote
 ```
 
 It's easy to see which branches are up to date with remote, which ones need to be pushed/pulled.
+
+Installation
+------------
+
+```bash
+go get -u github.com/shurcooL/git-branches
+```
+
+License
+-------
+
+-	[MIT License](https://opensource.org/licenses/mit-license.php)
