@@ -5,12 +5,18 @@ import (
 	"log"
 	"os/exec"
 	"strings"
+	"time"
 
 	"github.com/shurcooL/go/pipeutil"
 	"github.com/shurcooL/go/trim"
 	"github.com/shurcooL/vcsstate"
 	"golang.org/x/tools/go/vcs"
 	"gopkg.in/pipe.v2"
+)
+
+const (
+	iso8601  = "2006-01-02 15:04:05 -0700"
+	twoWeeks = time.Hour * 24 * 14
 )
 
 // BranchesOptions are options for Branches.
@@ -30,6 +36,8 @@ func (opt *BranchesOptions) fillMissing() {
 func Branches(dir string, opt BranchesOptions) (string, error) {
 	opt.fillMissing()
 
+	staleBranches := 0
+
 	vcs, err := vcsstate.NewVCS(vcs.ByCmd("git"))
 	if err != nil {
 		return "", err
@@ -39,8 +47,27 @@ func Branches(dir string, opt BranchesOptions) (string, error) {
 		return "", err
 	}
 
+	// line is tab-separated local branch, commiter date.
+	// E.g., "master\t2016-03-03 15:01:11 -0800".
 	branchInfo := func(line []byte) []byte {
-		branch := trim.LastNewline(string(line))
+		branchDate := strings.Split(trim.LastNewline(string(line)), "\t")
+		if len(branchDate) != 2 {
+			return []byte("error: len(branchDate) != 2")
+		}
+
+		// Sort by dates, hide stale (>= 2 weeks) branches unless -all flag.
+		if !*allFlag {
+			date, err := time.Parse(iso8601, branchDate[1])
+			if err != nil {
+				log.Fatalln(err)
+			}
+			if time.Since(date) >= twoWeeks {
+				staleBranches++
+				return nil
+			}
+		}
+
+		branch := branchDate[0]
 		branchDisplay := branch
 		if branch == localBranch {
 			branchDisplay = "**" + branch + "**"
@@ -62,7 +89,7 @@ func Branches(dir string, opt BranchesOptions) (string, error) {
 		pipe.Println("Branch | Behind | Ahead"),
 		pipe.Println("-------|-------:|:-----"),
 		pipe.Line(
-			pipe.Exec("git", "for-each-ref", "--format=%(refname:short)", "refs/heads"),
+			pipe.Exec("git", "for-each-ref", "--format=%(refname:short)\t%(committerdate:iso8601)", "refs/heads"),
 			pipe.Replace(branchInfo),
 		),
 	)
@@ -71,25 +98,55 @@ func Branches(dir string, opt BranchesOptions) (string, error) {
 	if err != nil {
 		return "", err
 	}
+
+	if staleBranches > 0 {
+		out = append(out, []byte(fmt.Sprintf("\n(%v stale branches not shown.)\n", staleBranches))...)
+	}
+
 	return string(out), nil
 }
 
-// Input is a line containing tab-separated local branch and remote branch.
-// For example, "master\torigin/master".
-func branchRemoteInfo(dir string, localBranch string) func(line []byte) []byte {
-	return func(line []byte) []byte {
-		branchRemote := strings.Split(trim.LastNewline(string(line)), "\t")
-		if len(branchRemote) != 2 {
-			return []byte("error: len(branchRemote) != 2")
+// BranchesRemote returns a Markdown table of branches with ahead/behind information relative to remote,
+// for a git repository in dir.
+func BranchesRemote(dir string) (string, error) {
+	staleBranches := 0
+
+	vcs, err := vcsstate.NewVCS(vcs.ByCmd("git"))
+	if err != nil {
+		return "", err
+	}
+	localBranch, err := vcs.Branch(dir)
+	if err != nil {
+		return "", err
+	}
+
+	// line is tab-separated local branch, remote branch, commiter date.
+	// E.g., "master\torigin/master\t2016-03-03 15:01:11 -0800".
+	branchRemoteInfo := func(line []byte) []byte {
+		branchRemoteDate := strings.Split(trim.LastNewline(string(line)), "\t")
+		if len(branchRemoteDate) != 3 {
+			return []byte("error: len(branchRemoteDate) != 3")
 		}
 
-		branch := branchRemote[0]
+		// Sort by dates, hide stale (>= 2 weeks) branches unless -all flag.
+		if !*allFlag {
+			date, err := time.Parse(iso8601, branchRemoteDate[2])
+			if err != nil {
+				log.Fatalln(err)
+			}
+			if time.Since(date) >= twoWeeks {
+				staleBranches++
+				return nil
+			}
+		}
+
+		branch := branchRemoteDate[0]
 		branchDisplay := branch
 		if branch == localBranch {
 			branchDisplay = "**" + branch + "**"
 		}
 
-		remote := branchRemote[1]
+		remote := branchRemoteDate[1]
 		if remote == "" {
 			return []byte(fmt.Sprintf("%s | | | \n", branchDisplay))
 		}
@@ -106,26 +163,13 @@ func branchRemoteInfo(dir string, localBranch string) func(line []byte) []byte {
 		behindAhead := strings.Split(trim.LastNewline(string(out)), "\t")
 		return []byte(fmt.Sprintf("%s | %s | %s | %s\n", branchDisplay, remote, behindAhead[0], behindAhead[1]))
 	}
-}
-
-// BranchesRemote returns a Markdown table of branches with ahead/behind information relative to remote,
-// for a git repository in dir.
-func BranchesRemote(dir string) (string, error) {
-	vcs, err := vcsstate.NewVCS(vcs.ByCmd("git"))
-	if err != nil {
-		return "", err
-	}
-	localBranch, err := vcs.Branch(dir)
-	if err != nil {
-		return "", err
-	}
 
 	p := pipe.Script(
 		pipe.Println("Branch | Remote | Behind | Ahead"),
 		pipe.Println("-------|--------|-------:|:-----"),
 		pipe.Line(
-			pipe.Exec("git", "for-each-ref", "--format=%(refname:short)\t%(upstream:short)", "refs/heads"),
-			pipe.Replace(branchRemoteInfo(dir, localBranch)),
+			pipe.Exec("git", "for-each-ref", "--format=%(refname:short)\t%(upstream:short)\t%(committerdate:iso8601)", "refs/heads"),
+			pipe.Replace(branchRemoteInfo),
 		),
 	)
 
@@ -133,5 +177,10 @@ func BranchesRemote(dir string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+
+	if staleBranches > 0 {
+		out = append(out, []byte(fmt.Sprintf("\n(%v stale branches not shown.)\n", staleBranches))...)
+	}
+
 	return string(out), nil
 }

@@ -16,6 +16,7 @@ import (
 var (
 	baseFlag   = flag.String("base", "", "base branch to compare against (only when -remote is not specified)")
 	remoteFlag = flag.Bool("remote", false, "compare local branches against remote")
+	allFlag    = flag.Bool("all", false, "display all branches, including stale (>= 2 weeks old)")
 )
 
 func main() {
