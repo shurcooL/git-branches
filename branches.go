@@ -55,8 +55,14 @@ func Branches(dir string, opt BranchesOptions) (string, error) {
 			return []byte("error: len(branchDate) != 2")
 		}
 
-		// Sort by dates, hide stale (>= 2 weeks) branches unless -all flag.
-		if !*allFlag {
+		branch := branchDate[0]
+		branchDisplay := branch
+		if branch == localBranch {
+			branchDisplay = "**" + branch + "**"
+		}
+
+		// Hide stale (>= 2 weeks) branches, unless -all flag or currently checked out.
+		if !*allFlag && branch != localBranch {
 			date, err := time.Parse(iso8601, branchDate[1])
 			if err != nil {
 				log.Fatalln(err)
@@ -65,12 +71,6 @@ func Branches(dir string, opt BranchesOptions) (string, error) {
 				staleBranches++
 				return nil
 			}
-		}
-
-		branch := branchDate[0]
-		branchDisplay := branch
-		if branch == localBranch {
-			branchDisplay = "**" + branch + "**"
 		}
 
 		cmd := exec.Command("git", "rev-list", "--count", "--left-right", opt.Base+"..."+branch)
@@ -89,7 +89,7 @@ func Branches(dir string, opt BranchesOptions) (string, error) {
 		pipe.Println("Branch | Behind | Ahead"),
 		pipe.Println("-------|-------:|:-----"),
 		pipe.Line(
-			pipe.Exec("git", "for-each-ref", "--format=%(refname:short)\t%(committerdate:iso8601)", "refs/heads"),
+			pipe.Exec("git", "for-each-ref", "--sort=-committerdate", "--format=%(refname:short)\t%(committerdate:iso8601)", "refs/heads"),
 			pipe.Replace(branchInfo),
 		),
 	)
@@ -128,8 +128,14 @@ func BranchesRemote(dir string) (string, error) {
 			return []byte("error: len(branchRemoteDate) != 3")
 		}
 
-		// Sort by dates, hide stale (>= 2 weeks) branches unless -all flag.
-		if !*allFlag {
+		branch := branchRemoteDate[0]
+		branchDisplay := branch
+		if branch == localBranch {
+			branchDisplay = "**" + branch + "**"
+		}
+
+		// Hide stale (>= 2 weeks) branches, unless -all flag or currently checked out.
+		if !*allFlag && branch != localBranch {
 			date, err := time.Parse(iso8601, branchRemoteDate[2])
 			if err != nil {
 				log.Fatalln(err)
@@ -138,12 +144,6 @@ func BranchesRemote(dir string) (string, error) {
 				staleBranches++
 				return nil
 			}
-		}
-
-		branch := branchRemoteDate[0]
-		branchDisplay := branch
-		if branch == localBranch {
-			branchDisplay = "**" + branch + "**"
 		}
 
 		remote := branchRemoteDate[1]
@@ -168,7 +168,7 @@ func BranchesRemote(dir string) (string, error) {
 		pipe.Println("Branch | Remote | Behind | Ahead"),
 		pipe.Println("-------|--------|-------:|:-----"),
 		pipe.Line(
-			pipe.Exec("git", "for-each-ref", "--format=%(refname:short)\t%(upstream:short)\t%(committerdate:iso8601)", "refs/heads"),
+			pipe.Exec("git", "for-each-ref", "--sort=-committerdate", "--format=%(refname:short)\t%(upstream:short)\t%(committerdate:iso8601)", "refs/heads"),
 			pipe.Replace(branchRemoteInfo),
 		),
 	)
