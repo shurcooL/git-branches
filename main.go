@@ -20,6 +20,10 @@ var (
 
 func main() {
 	flag.Parse()
+	if len(flag.Args()) != 0 {
+		flag.Usage()
+		os.Exit(2)
+	}
 	if *baseFlag != "" && *remoteFlag {
 		fmt.Fprintln(os.Stderr, "warning: -base is ignored when -remote is specified")
 	}
