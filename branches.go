@@ -61,8 +61,8 @@ func Branches(dir string, opt BranchesOptions) (string, error) {
 			branchDisplay = "**" + branch + "**"
 		}
 
-		// Hide stale (>= 2 weeks) branches, unless -all flag or currently checked out.
-		if !*allFlag && branch != localBranch {
+		// Hide stale (>= 2 weeks) branches, unless -all flag or currently checked out or default branch.
+		if !*allFlag && branch != localBranch && branch != vcs.DefaultBranch() {
 			date, err := time.Parse(iso8601, branchDate[1])
 			if err != nil {
 				log.Fatalln(err)
@@ -134,8 +134,8 @@ func BranchesRemote(dir string) (string, error) {
 			branchDisplay = "**" + branch + "**"
 		}
 
-		// Hide stale (>= 2 weeks) branches, unless -all flag or currently checked out.
-		if !*allFlag && branch != localBranch {
+		// Hide stale (>= 2 weeks) branches, unless -all flag or currently checked out or default branch.
+		if !*allFlag && branch != localBranch && branch != vcs.DefaultBranch() {
 			date, err := time.Parse(iso8601, branchRemoteDate[2])
 			if err != nil {
 				log.Fatalln(err)
