@@ -46,6 +46,7 @@ func Branches(dir string, opt BranchesOptions) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	defaultBranch := vcs.NoRemoteDefaultBranch() // TODO: Try to get remote default branch, maybe?
 
 	// line is tab-separated local branch, commiter date.
 	// E.g., "master\t2016-03-03 15:01:11 -0800".
@@ -62,7 +63,7 @@ func Branches(dir string, opt BranchesOptions) (string, error) {
 		}
 
 		// Hide stale (>= 2 weeks) branches, unless -all flag or currently checked out or default branch.
-		if !*allFlag && branch != localBranch && branch != vcs.DefaultBranch() {
+		if !*allFlag && branch != localBranch && branch != defaultBranch {
 			date, err := time.Parse(iso8601, branchDate[1])
 			if err != nil {
 				log.Fatalln(err)
@@ -119,6 +120,7 @@ func BranchesRemote(dir string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	defaultBranch := vcs.NoRemoteDefaultBranch() // TODO: Try to get remote default branch, maybe?
 
 	// line is tab-separated local branch, remote branch, commiter date.
 	// E.g., "master\torigin/master\t2016-03-03 15:01:11 -0800".
@@ -135,7 +137,7 @@ func BranchesRemote(dir string) (string, error) {
 		}
 
 		// Hide stale (>= 2 weeks) branches, unless -all flag or currently checked out or default branch.
-		if !*allFlag && branch != localBranch && branch != vcs.DefaultBranch() {
+		if !*allFlag && branch != localBranch && branch != defaultBranch {
 			date, err := time.Parse(iso8601, branchRemoteDate[2])
 			if err != nil {
 				log.Fatalln(err)
