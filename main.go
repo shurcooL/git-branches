@@ -14,9 +14,8 @@ import (
 )
 
 var (
-	baseFlag   = flag.String("base", "", "base branch to compare against (only when -remote is not specified)")
-	remoteFlag = flag.Bool("remote", false, "compare local branches against remote")
-	allFlag    = flag.Bool("all", false, "display all branches, including stale (>= 2 weeks old)")
+	baseFlag = flag.String("base", "", "base branch to compare against (only when -remote is not specified)")
+	allFlag  = flag.Bool("all", false, "display all branches, including stale (>= 2 weeks old)")
 )
 
 func main() {
@@ -24,9 +23,6 @@ func main() {
 	if len(flag.Args()) != 0 {
 		flag.Usage()
 		os.Exit(2)
-	}
-	if *baseFlag != "" && *remoteFlag {
-		fmt.Fprintln(os.Stderr, "warning: -base is ignored when -remote is specified")
 	}
 
 	err := run()
@@ -44,33 +40,46 @@ func run() error {
 	if err != nil {
 		return err
 	}
+	isTerminal := terminal.IsTerminal(int(os.Stdout.Fd()))
 
-	if *remoteFlag {
-		cmd := exec.Command("git", "remote", "update", "--prune")
-		out, err := cmd.CombinedOutput()
-		if err != nil {
-			fmt.Fprintln(os.Stderr, "git remote update failed:", err)
-			os.Stderr.Write(out)
-		}
-	}
-
-	var branches string
-	switch *remoteFlag {
-	case false:
-		branches, err = Branches(dir, BranchesOptions{Base: *baseFlag})
-	case true:
-		branches, err = BranchesRemote(dir)
-	}
+	// Display local branches.
+	branches, staleBranches, err := Branches(dir, BranchesOptions{Base: *baseFlag})
 	if err != nil {
 		return err
 	}
-
-	stdout := int(os.Stdout.Fd())
-	formatted, err := markdown.Process("", []byte(branches), &markdown.Options{Terminal: terminal.IsTerminal(stdout)})
+	formatted, err := markdown.Process("", []byte(branches), &markdown.Options{Terminal: isTerminal})
 	if err != nil {
 		return err
 	}
 	os.Stdout.Write(formatted)
+
+	// Update remotes.
+	cmd := exec.Command("git", "remote", "update", "--prune")
+	out, err := cmd.CombinedOutput()
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "git remote update failed:", err)
+		os.Stderr.Write(out)
+	}
+
+	fmt.Println()
+
+	// Display remote branches.
+	branches, staleRemoteBranches, err := BranchesRemote(dir)
+	if err != nil {
+		return err
+	}
+	formatted, err = markdown.Process("", []byte(branches), &markdown.Options{Terminal: isTerminal})
+	if err != nil {
+		return err
+	}
+	os.Stdout.Write(formatted)
+
+	switch {
+	case staleBranches == staleRemoteBranches && staleBranches > 0:
+		fmt.Printf("\n(%v stale branches not shown.)\n", staleBranches)
+	case staleBranches != staleRemoteBranches && (staleBranches > 0 || staleRemoteBranches > 0):
+		fmt.Printf("\n(%v stale local, %v stale remote branches not shown.)\n", staleBranches, staleRemoteBranches)
+	}
 
 	return nil
 }

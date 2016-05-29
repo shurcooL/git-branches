@@ -12,22 +12,17 @@ $ git branch
   wip/get-tweet-body
 ```
 
-Now, do `go get -u github.com/shurcooL/cmd/git-branches` on any machine with Go installed, and then:
+Now, do `go get -u github.com/shurcooL/git-branches` on any machine with Go installed, and then:
 
 ```
 $ git-branches
-| Branch                              | Behind | Ahead |
-|-------------------------------------|-------:|:------|
-| feature/sanitized_anchor_context    |    119 | 1     |
-| **master**                          |      0 | 0     |
-| unfinished-attempt/alternative-sort |     67 | 1     |
-| wip/get-tweet-body                  |     40 | 1     |
-```
+| Branch                              | Base   | Behind | Ahead |
+|-------------------------------------|--------|-------:|:------|
+| feature/sanitized_anchor_context    | master |    119 | 1     |
+| **master**                          | master |      0 | 0     |
+| unfinished-attempt/alternative-sort | master |     67 | 1     |
+| wip/get-tweet-body                  | master |     40 | 1     |
 
-It supports -base option if you want to compare against non-master branch. It also supports -remote mode, where it compares local branches to their remotes:
-
-```
-$ git-branches -remote
 | Branch                              | Remote                                     | Behind | Ahead |
 |-------------------------------------|--------------------------------------------|-------:|:------|
 | feature/sanitized_anchor_context    | origin/feature/sanitized_anchor_context    |      5 | 0     |
@@ -36,7 +31,9 @@ $ git-branches -remote
 | wip/get-tweet-body                  |                                            |        |       |
 ```
 
-It's easy to see which branches are up to date with remote, which ones need to be pushed/pulled.
+The currently checked out branch is emphasized with asterisks. You can see how branches compare to master base branch locally. It supports -base option if you want to compare against a different base branch.
+
+It's also easy to see which branches are up to date with remote, which ones need to be pushed/pulled.
 
 Installation
 ------------

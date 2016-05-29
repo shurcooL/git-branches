@@ -33,18 +33,16 @@ func (opt *BranchesOptions) fillMissing() {
 
 // Branches returns a Markdown table of branches with ahead/behind information relative to master branch,
 // for a git repository in dir.
-func Branches(dir string, opt BranchesOptions) (string, error) {
+func Branches(dir string, opt BranchesOptions) (_ string, staleBranches int, _ error) {
 	opt.fillMissing()
-
-	staleBranches := 0
 
 	vcs, err := vcsstate.NewVCS(vcs.ByCmd("git"))
 	if err != nil {
-		return "", err
+		return "", 0, err
 	}
 	localBranch, err := vcs.Branch(dir)
 	if err != nil {
-		return "", err
+		return "", 0, err
 	}
 	defaultBranch := vcs.NoRemoteDefaultBranch() // TODO: Try to get remote default branch, maybe?
 
@@ -79,16 +77,16 @@ func Branches(dir string, opt BranchesOptions) (string, error) {
 		out, err := cmd.Output()
 		if err != nil {
 			log.Printf("error running %v: %v\n", cmd.Args, err)
-			return []byte(fmt.Sprintf("%s | ? | ?\n", branchDisplay))
+			return []byte(fmt.Sprintf("%s | %s | ? | ?\n", branchDisplay, opt.Base))
 		}
 
 		behindAhead := strings.Split(trim.LastNewline(string(out)), "\t")
-		return []byte(fmt.Sprintf("%s | %s | %s\n", branchDisplay, behindAhead[0], behindAhead[1]))
+		return []byte(fmt.Sprintf("%s | %s | %s | %s\n", branchDisplay, opt.Base, behindAhead[0], behindAhead[1]))
 	}
 
 	p := pipe.Script(
-		pipe.Println("Branch | Behind | Ahead"),
-		pipe.Println("-------|-------:|:-----"),
+		pipe.Println("Branch | Base | Behind | Ahead"),
+		pipe.Println("-------|------|-------:|:-----"),
 		pipe.Line(
 			pipe.Exec("git", "for-each-ref", "--sort=-committerdate", "--format=%(refname:short)\t%(committerdate:iso8601)", "refs/heads"),
 			pipe.Replace(branchInfo),
@@ -97,28 +95,22 @@ func Branches(dir string, opt BranchesOptions) (string, error) {
 
 	out, err := pipeutil.OutputDir(p, dir)
 	if err != nil {
-		return "", err
+		return "", 0, err
 	}
 
-	if staleBranches > 0 {
-		out = append(out, []byte(fmt.Sprintf("\n(%v stale branches not shown.)\n", staleBranches))...)
-	}
-
-	return string(out), nil
+	return string(out), staleBranches, nil
 }
 
 // BranchesRemote returns a Markdown table of branches with ahead/behind information relative to remote,
 // for a git repository in dir.
-func BranchesRemote(dir string) (string, error) {
-	staleBranches := 0
-
+func BranchesRemote(dir string) (_ string, staleBranches int, _ error) {
 	vcs, err := vcsstate.NewVCS(vcs.ByCmd("git"))
 	if err != nil {
-		return "", err
+		return "", 0, err
 	}
 	localBranch, err := vcs.Branch(dir)
 	if err != nil {
-		return "", err
+		return "", 0, err
 	}
 	defaultBranch := vcs.NoRemoteDefaultBranch() // TODO: Try to get remote default branch, maybe?
 
@@ -177,12 +169,8 @@ func BranchesRemote(dir string) (string, error) {
 
 	out, err := pipeutil.OutputDir(p, dir)
 	if err != nil {
-		return "", err
+		return "", 0, err
 	}
 
-	if staleBranches > 0 {
-		out = append(out, []byte(fmt.Sprintf("\n(%v stale branches not shown.)\n", staleBranches))...)
-	}
-
-	return string(out), nil
+	return string(out), staleBranches, nil
 }
