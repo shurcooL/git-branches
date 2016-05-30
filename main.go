@@ -14,7 +14,7 @@ import (
 )
 
 var (
-	baseFlag = flag.String("base", "", "base branch to compare against (only when -remote is not specified)")
+	baseFlag = flag.String("base", "master", "base branch to compare against locally")
 	allFlag  = flag.Bool("all", false, "display all branches, including stale (>= 2 weeks old)")
 )
 
@@ -43,7 +43,7 @@ func run() error {
 	isTerminal := terminal.IsTerminal(int(os.Stdout.Fd()))
 
 	// Display local branches.
-	branches, staleBranches, err := Branches(dir, BranchesOptions{Base: *baseFlag})
+	branches, staleBranches, err := branches(dir, *baseFlag)
 	if err != nil {
 		return err
 	}
@@ -53,7 +53,7 @@ func run() error {
 	}
 	os.Stdout.Write(formatted)
 
-	// Update remotes.
+	// Update all remotes.
 	cmd := exec.Command("git", "remote", "update", "--prune")
 	out, err := cmd.CombinedOutput()
 	if err != nil {
@@ -61,10 +61,8 @@ func run() error {
 		os.Stderr.Write(out)
 	}
 
-	fmt.Println()
-
 	// Display remote branches.
-	branches, staleRemoteBranches, err := BranchesRemote(dir)
+	branches, staleRemoteBranches, err := branchesRemote(dir, *baseFlag)
 	if err != nil {
 		return err
 	}
@@ -72,6 +70,7 @@ func run() error {
 	if err != nil {
 		return err
 	}
+	fmt.Println()
 	os.Stdout.Write(formatted)
 
 	switch {

@@ -19,32 +19,19 @@ const (
 	twoWeeks = time.Hour * 24 * 14
 )
 
-// BranchesOptions are options for Branches.
-type BranchesOptions struct {
-	Base string // Base branch to compare against (if blank, defaults to "master").
-}
-
-// fillMissing sets default values for mandatory options that are left empty.
-func (opt *BranchesOptions) fillMissing() {
-	if opt.Base == "" {
-		opt.Base = "master"
-	}
-}
-
-// Branches returns a Markdown table of branches with ahead/behind information relative to master branch,
-// for a git repository in dir.
-func Branches(dir string, opt BranchesOptions) (_ string, staleBranches int, _ error) {
-	opt.fillMissing()
-
-	vcs, err := vcsstate.NewVCS(vcs.ByCmd("git"))
+// branches returns a Markdown table of branches with ahead/behind information relative to master branch,
+// for a git repository in dir. baseBranch is base branch to compare against, and is never hidden as stale.
+func branches(dir string, baseBranch string) (_ string, staleBranches int, _ error) {
+	git, err := vcsstate.NewVCS(vcs.ByCmd("git"))
 	if err != nil {
 		return "", 0, err
 	}
-	localBranch, err := vcs.Branch(dir)
+	localBranch, err := git.Branch(dir)
 	if err != nil {
 		return "", 0, err
 	}
-	defaultBranch := vcs.NoRemoteDefaultBranch() // TODO: Try to get remote default branch, maybe?
+	// In general, we can't figure out what the "default" branch is, because we don't know which
+	// remote, if any, is canonical. So just use the provided base branch.
 
 	// line is tab-separated local branch, commiter date.
 	// E.g., "master\t2016-03-03 15:01:11 -0800".
@@ -60,8 +47,8 @@ func Branches(dir string, opt BranchesOptions) (_ string, staleBranches int, _ e
 			branchDisplay = "**" + branch + "**"
 		}
 
-		// Hide stale (>= 2 weeks) branches, unless -all flag or currently checked out or default branch.
-		if !*allFlag && branch != localBranch && branch != defaultBranch {
+		// Hide stale (>= 2 weeks) branches, unless -all flag or currently checked out or base branch.
+		if !*allFlag && branch != localBranch && branch != baseBranch {
 			date, err := time.Parse(iso8601, branchDate[1])
 			if err != nil {
 				log.Fatalln(err)
@@ -72,16 +59,16 @@ func Branches(dir string, opt BranchesOptions) (_ string, staleBranches int, _ e
 			}
 		}
 
-		cmd := exec.Command("git", "rev-list", "--count", "--left-right", opt.Base+"..."+branch)
+		cmd := exec.Command("git", "rev-list", "--count", "--left-right", baseBranch+"..."+branch)
 		cmd.Dir = dir
 		out, err := cmd.Output()
 		if err != nil {
 			log.Printf("error running %v: %v\n", cmd.Args, err)
-			return []byte(fmt.Sprintf("%s | %s | ? | ?\n", branchDisplay, opt.Base))
+			return []byte(fmt.Sprintf("%s | %s | ? | ?\n", branchDisplay, baseBranch))
 		}
 
 		behindAhead := strings.Split(trim.LastNewline(string(out)), "\t")
-		return []byte(fmt.Sprintf("%s | %s | %s | %s\n", branchDisplay, opt.Base, behindAhead[0], behindAhead[1]))
+		return []byte(fmt.Sprintf("%s | %s | %s | %s\n", branchDisplay, baseBranch, behindAhead[0], behindAhead[1]))
 	}
 
 	p := pipe.Script(
@@ -101,18 +88,19 @@ func Branches(dir string, opt BranchesOptions) (_ string, staleBranches int, _ e
 	return string(out), staleBranches, nil
 }
 
-// BranchesRemote returns a Markdown table of branches with ahead/behind information relative to remote,
-// for a git repository in dir.
-func BranchesRemote(dir string) (_ string, staleBranches int, _ error) {
-	vcs, err := vcsstate.NewVCS(vcs.ByCmd("git"))
+// branchesRemote returns a Markdown table of branches with ahead/behind information relative to remote,
+// for a git repository in dir. baseBranch is never hidden as stale.
+func branchesRemote(dir string, baseBranch string) (_ string, staleBranches int, _ error) {
+	git, err := vcsstate.NewVCS(vcs.ByCmd("git"))
 	if err != nil {
 		return "", 0, err
 	}
-	localBranch, err := vcs.Branch(dir)
+	localBranch, err := git.Branch(dir)
 	if err != nil {
 		return "", 0, err
 	}
-	defaultBranch := vcs.NoRemoteDefaultBranch() // TODO: Try to get remote default branch, maybe?
+	// In general, we can't figure out what the "default" branch is, because we don't know which
+	// remote, if any, is canonical. So just use the provided base branch.
 
 	// line is tab-separated local branch, remote branch, commiter date.
 	// E.g., "master\torigin/master\t2016-03-03 15:01:11 -0800".
@@ -128,8 +116,8 @@ func BranchesRemote(dir string) (_ string, staleBranches int, _ error) {
 			branchDisplay = "**" + branch + "**"
 		}
 
-		// Hide stale (>= 2 weeks) branches, unless -all flag or currently checked out or default branch.
-		if !*allFlag && branch != localBranch && branch != defaultBranch {
+		// Hide stale (>= 2 weeks) branches, unless -all flag or currently checked out or base branch.
+		if !*allFlag && branch != localBranch && branch != baseBranch {
 			date, err := time.Parse(iso8601, branchRemoteDate[2])
 			if err != nil {
 				log.Fatalln(err)
