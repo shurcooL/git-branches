@@ -40,7 +40,7 @@ func run() error {
 	if err != nil {
 		return err
 	}
-	isTerminal := terminal.IsTerminal(int(os.Stdout.Fd()))
+	isTerminal := terminal.IsTerminal(int(os.Stdout.Fd())) && os.Getenv("TERM") != "dumb"
 
 	// Display local branches.
 	branches, staleBranches, err := branches(dir, *baseFlag)
