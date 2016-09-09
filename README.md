@@ -29,11 +29,15 @@ $ git-branches
 | **master**                          | origin/master                              |      0 | 1     |
 | unfinished-attempt/alternative-sort | origin/unfinished-attempt/alternative-sort |      0 | 0     |
 | wip/get-tweet-body                  |                                            |        |       |
+
+(4 stale/trashed branches not shown.)
 ```
 
 The currently checked out branch is emphasized with asterisks. You can see how branches compare to master base branch locally. It supports -base option if you want to compare against a different base branch.
 
 It's also easy to see which branches are up to date with remote, which ones need to be pushed/pulled.
+
+Branches that are stale (>= 2 weeks) or trashed ("trash/" prefix) are hidden by default, unless -all flag is used.
 
 Installation
 ------------

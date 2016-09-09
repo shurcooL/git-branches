@@ -47,8 +47,14 @@ func branches(dir string, baseBranch string) (_ string, staleBranches int, _ err
 			branchDisplay = "**" + branch + "**"
 		}
 
-		// Hide stale (>= 2 weeks) branches, unless -all flag or currently checked out or base branch.
+		// Hide stale (>= 2 weeks) and trashed ("trash/" prefix) branches,
+		// unless -all flag or currently checked out or base branch.
 		if !*allFlag && branch != localBranch && branch != baseBranch {
+			if strings.HasPrefix(branch, "trash/") {
+				staleBranches++
+				return nil
+			}
+
 			date, err := time.Parse(iso8601, branchDate[1])
 			if err != nil {
 				log.Fatalln(err)
@@ -116,8 +122,14 @@ func branchesRemote(dir string, baseBranch string) (_ string, staleBranches int,
 			branchDisplay = "**" + branch + "**"
 		}
 
-		// Hide stale (>= 2 weeks) branches, unless -all flag or currently checked out or base branch.
+		// Hide stale (>= 2 weeks) and trashed ("trash/" prefix) branches,
+		// unless -all flag or currently checked out or base branch.
 		if !*allFlag && branch != localBranch && branch != baseBranch {
+			if strings.HasPrefix(branch, "trash/") {
+				staleBranches++
+				return nil
+			}
+
 			date, err := time.Parse(iso8601, branchRemoteDate[2])
 			if err != nil {
 				log.Fatalln(err)

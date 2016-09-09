@@ -75,9 +75,9 @@ func run() error {
 
 	switch {
 	case staleBranches == staleRemoteBranches && staleBranches > 0:
-		fmt.Printf("\n(%v stale branches not shown.)\n", staleBranches)
+		fmt.Printf("\n(%v stale/trashed branches not shown.)\n", staleBranches)
 	case staleBranches != staleRemoteBranches && (staleBranches > 0 || staleRemoteBranches > 0):
-		fmt.Printf("\n(%v stale local, %v stale remote branches not shown.)\n", staleBranches, staleRemoteBranches)
+		fmt.Printf("\n(%v stale/trashed local, %v stale/trashed remote branches not shown.)\n", staleBranches, staleRemoteBranches)
 	}
 
 	return nil
