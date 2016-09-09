@@ -1,4 +1,7 @@
-# git-branches [![Build Status](https://travis-ci.org/shurcooL/git-branches.svg?branch=master)](https://travis-ci.org/shurcooL/git-branches) [![GoDoc](https://godoc.org/github.com/shurcooL/git-branches?status.svg)](https://godoc.org/github.com/shurcooL/git-branches)
+git-branches
+============
+
+[![Build Status](https://travis-ci.org/shurcooL/git-branches.svg?branch=master)](https://travis-ci.org/shurcooL/git-branches) [![GoDoc](https://godoc.org/github.com/shurcooL/git-branches?status.svg)](https://godoc.org/github.com/shurcooL/git-branches)
 
 git-branches is a go gettable command that displays branches with behind/ahead commit counts. If you've used GitHub, you'll notice their branches page displays this info. This is that, but for your local git repo, in the terminal.
 
@@ -12,15 +15,15 @@ $ git branch
   wip/get-tweet-body
 ```
 
-Now, do `go get -u github.com/shurcooL/git-branches` on any machine with Go installed, and then:
+Now, run `go get -u github.com/shurcooL/git-branches` on any machine with Go installed, and then:
 
 ```
 $ git-branches
 | Branch                              | Base   | Behind | Ahead |
 |-------------------------------------|--------|-------:|:------|
-| feature/sanitized_anchor_context    | master |    119 | 1     |
+| feature/sanitized_anchor_context    | master |    119 | 2     |
 | **master**                          | master |      0 | 0     |
-| unfinished-attempt/alternative-sort | master |     67 | 1     |
+| unfinished-attempt/alternative-sort | master |     67 | 4     |
 | wip/get-tweet-body                  | master |     40 | 1     |
 
 | Branch                              | Remote                                     | Behind | Ahead |
