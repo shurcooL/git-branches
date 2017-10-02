@@ -15,8 +15,8 @@ import (
 )
 
 const (
-	iso8601  = "2006-01-02 15:04:05 -0700"
-	twoWeeks = time.Hour * 24 * 14
+	iso8601Strict = time.RFC3339 // Can use time.RFC3339 to parse git's ISO8601 strict time format.
+	twoWeeks      = time.Hour * 24 * 14
 )
 
 // branches returns a Markdown table of branches with ahead/behind information relative to master branch,
@@ -55,7 +55,7 @@ func branches(dir string, baseBranch string) (_ string, staleBranches int, _ err
 				return nil
 			}
 
-			date, err := time.Parse(iso8601, branchDate[1])
+			date, err := time.Parse(iso8601Strict, branchDate[1])
 			if err != nil {
 				log.Fatalln(err)
 			}
@@ -81,7 +81,7 @@ func branches(dir string, baseBranch string) (_ string, staleBranches int, _ err
 		pipe.Println("Branch | Base | Behind | Ahead"),
 		pipe.Println("-------|------|-------:|:-----"),
 		pipe.Line(
-			pipe.Exec("git", "for-each-ref", "--sort=-committerdate", "--format=%(refname:short)\t%(committerdate:iso8601)", "refs/heads"),
+			pipe.Exec("git", "for-each-ref", "--sort=-committerdate", "--format=%(refname:short)\t%(committerdate:iso8601-strict)", "refs/heads"),
 			pipe.Replace(branchInfo),
 		),
 	)
@@ -130,7 +130,7 @@ func branchesRemote(dir string, baseBranch string) (_ string, staleBranches int,
 				return nil
 			}
 
-			date, err := time.Parse(iso8601, branchRemoteDate[2])
+			date, err := time.Parse(iso8601Strict, branchRemoteDate[2])
 			if err != nil {
 				log.Fatalln(err)
 			}
@@ -162,7 +162,7 @@ func branchesRemote(dir string, baseBranch string) (_ string, staleBranches int,
 		pipe.Println("Branch | Remote | Behind | Ahead"),
 		pipe.Println("-------|--------|-------:|:-----"),
 		pipe.Line(
-			pipe.Exec("git", "for-each-ref", "--sort=-committerdate", "--format=%(refname:short)\t%(upstream:short)\t%(committerdate:iso8601)", "refs/heads"),
+			pipe.Exec("git", "for-each-ref", "--sort=-committerdate", "--format=%(refname:short)\t%(upstream:short)\t%(committerdate:iso8601-strict)", "refs/heads"),
 			pipe.Replace(branchRemoteInfo),
 		),
 	)
