@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/shurcooL/go/pipeutil"
-	"github.com/shurcooL/go/trim"
 	"github.com/shurcooL/vcsstate"
 	"golang.org/x/tools/go/vcs"
 	"gopkg.in/pipe.v2"
@@ -36,7 +35,7 @@ func branches(dir string, baseBranch string) (_ string, staleBranches int, _ err
 	// line is tab-separated local branch, commiter date.
 	// E.g., "master\t2016-03-03 15:01:11 -0800".
 	branchInfo := func(line []byte) []byte {
-		branchDate := strings.Split(trim.LastNewline(string(line)), "\t")
+		branchDate := strings.Split(strings.TrimSuffix(string(line), "\n"), "\t")
 		if len(branchDate) != 2 {
 			return []byte("error: len(branchDate) != 2")
 		}
@@ -73,7 +72,7 @@ func branches(dir string, baseBranch string) (_ string, staleBranches int, _ err
 			return []byte(fmt.Sprintf("%s | %s | ? | ?\n", branchDisplay, baseBranch))
 		}
 
-		behindAhead := strings.Split(trim.LastNewline(string(out)), "\t")
+		behindAhead := strings.Split(strings.TrimSuffix(string(out), "\n"), "\t")
 		return []byte(fmt.Sprintf("%s | %s | %s | %s\n", branchDisplay, baseBranch, behindAhead[0], behindAhead[1]))
 	}
 
@@ -111,7 +110,7 @@ func branchesRemote(dir string, baseBranch string) (_ string, staleBranches int,
 	// line is tab-separated local branch, remote branch, commiter date.
 	// E.g., "master\torigin/master\t2016-03-03 15:01:11 -0800".
 	branchRemoteInfo := func(line []byte) []byte {
-		branchRemoteDate := strings.Split(trim.LastNewline(string(line)), "\t")
+		branchRemoteDate := strings.Split(strings.TrimSuffix(string(line), "\n"), "\t")
 		if len(branchRemoteDate) != 3 {
 			return []byte("error: len(branchRemoteDate) != 3")
 		}
@@ -154,7 +153,7 @@ func branchesRemote(dir string, baseBranch string) (_ string, staleBranches int,
 			return []byte(fmt.Sprintf("%s | %s | | \n", branchDisplay, remoteDisplay))
 		}
 
-		behindAhead := strings.Split(trim.LastNewline(string(out)), "\t")
+		behindAhead := strings.Split(strings.TrimSuffix(string(out), "\n"), "\t")
 		return []byte(fmt.Sprintf("%s | %s | %s | %s\n", branchDisplay, remote, behindAhead[0], behindAhead[1]))
 	}
 
