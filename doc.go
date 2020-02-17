@@ -36,7 +36,7 @@ base branch.
 
 It's also easy to see which branches are up to date with remote, which ones need to be pushed/pulled.
 
-Branches that are stale (>= 2 weeks old) or trashed ("trash/" prefix) are hidden by default, unless -all
+Branches that are stale (>= 8 weeks old) or trashed ("trash/" prefix) are hidden by default, unless -all
 flag is used.
 */
 package main

@@ -40,7 +40,7 @@ The currently checked out branch is emphasized with asterisks. You can see how b
 
 It's also easy to see which branches are up to date with remote, which ones need to be pushed/pulled.
 
-Branches that are stale (>= 2 weeks old) or trashed ("trash/" prefix) are hidden by default, unless -all flag is used.
+Branches that are stale (>= 8 weeks old) or trashed ("trash/" prefix) are hidden by default, unless -all flag is used.
 
 Installation
 ------------
