@@ -15,7 +15,7 @@ import (
 
 const (
 	iso8601Strict = time.RFC3339 // Can use time.RFC3339 to parse git's ISO8601 strict time format.
-	twoWeeks      = time.Hour * 24 * 14
+	eightWeeks    = 8 * (7 * 24 * time.Hour)
 )
 
 // branches returns a Markdown table of branches with ahead/behind information relative to master branch,
@@ -46,7 +46,7 @@ func branches(dir string, baseBranch string) (_ string, staleBranches int, _ err
 			branchDisplay = "**" + branch + "**"
 		}
 
-		// Hide stale (>= 2 weeks) and trashed ("trash/" prefix) branches,
+		// Hide stale (>= 8 weeks) and trashed ("trash/" prefix) branches,
 		// unless -all flag or currently checked out or base branch.
 		if !*allFlag && branch != localBranch && branch != baseBranch {
 			if strings.HasPrefix(branch, "trash/") {
@@ -58,7 +58,7 @@ func branches(dir string, baseBranch string) (_ string, staleBranches int, _ err
 			if err != nil {
 				log.Fatalln(err)
 			}
-			if time.Since(date) >= twoWeeks {
+			if time.Since(date) >= eightWeeks {
 				staleBranches++
 				return nil
 			}
@@ -121,7 +121,7 @@ func branchesRemote(dir string, baseBranch string) (_ string, staleBranches int,
 			branchDisplay = "**" + branch + "**"
 		}
 
-		// Hide stale (>= 2 weeks) and trashed ("trash/" prefix) branches,
+		// Hide stale (>= 8 weeks) and trashed ("trash/" prefix) branches,
 		// unless -all flag or currently checked out or base branch.
 		if !*allFlag && branch != localBranch && branch != baseBranch {
 			if strings.HasPrefix(branch, "trash/") {
@@ -133,7 +133,7 @@ func branchesRemote(dir string, baseBranch string) (_ string, staleBranches int,
 			if err != nil {
 				log.Fatalln(err)
 			}
-			if time.Since(date) >= twoWeeks {
+			if time.Since(date) >= eightWeeks {
 				staleBranches++
 				return nil
 			}

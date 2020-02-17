@@ -14,7 +14,7 @@ import (
 
 var (
 	baseFlag = flag.String("base", "master", "base branch to compare against locally")
-	allFlag  = flag.Bool("all", false, `display all branches, including stale (>= 2 weeks old) and trashed ("trash/" prefix)`)
+	allFlag  = flag.Bool("all", false, `display all branches, including stale (>= 8 weeks old) and trashed ("trash/" prefix)`)
 )
 
 func main() {
