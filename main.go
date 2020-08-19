@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 
 	"github.com/shurcooL/markdownfmt/markdown"
-	"golang.org/x/crypto/ssh/terminal"
+	"golang.org/x/term"
 )
 
 var (
@@ -39,7 +39,7 @@ func run() error {
 	if err != nil {
 		return err
 	}
-	isTerminal := terminal.IsTerminal(int(os.Stdout.Fd())) && os.Getenv("TERM") != "dumb"
+	isTerminal := term.IsTerminal(int(os.Stdout.Fd())) && os.Getenv("TERM") != "dumb"
 
 	// Display local branches.
 	branches, staleBranches, err := branches(dir, *baseFlag)
