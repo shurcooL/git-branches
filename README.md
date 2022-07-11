@@ -1,9 +1,9 @@
 git-branches
 ============
 
-[![Build Status](https://travis-ci.org/shurcooL/git-branches.svg?branch=master)](https://travis-ci.org/shurcooL/git-branches) [![GoDoc](https://godoc.org/github.com/shurcooL/git-branches?status.svg)](https://godoc.org/github.com/shurcooL/git-branches)
+[![Go Reference](https://pkg.go.dev/badge/github.com/shurcooL/git-branches.svg)](https://pkg.go.dev/github.com/shurcooL/git-branches)
 
-git-branches is a go gettable command that displays branches with behind/ahead commit counts. If you've used GitHub, you'll notice their branches page displays this info. This is that, but for your local git repo, in the terminal.
+The git-branches command displays branches with behind/ahead commit counts. If you've used GitHub, you'll notice their branches page displays this info. This is that, but for your local git repo, in the terminal.
 
 Go to any git repo you're working on and type:
 
@@ -15,7 +15,7 @@ $ git branch
   wip/get-tweet-body
 ```
 
-Now, run `go get -u github.com/shurcooL/git-branches` on any machine with Go installed, and then:
+Now, run `go install github.com/shurcooL/git-branches@latest` on any machine with Go installed, and then:
 
 ```
 $ git-branches
@@ -45,11 +45,11 @@ Branches that are stale (>= 2 weeks old) or trashed ("trash/" prefix) are hidden
 Installation
 ------------
 
-```bash
-go get -u github.com/shurcooL/git-branches
+```sh
+go install github.com/shurcooL/git-branches@latest
 ```
 
 License
 -------
 
--	[MIT License](https://opensource.org/licenses/mit-license.php)
+-	[MIT License](LICENSE)

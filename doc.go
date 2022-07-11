@@ -1,7 +1,7 @@
 /*
-git-branches is a go gettable command that displays branches with behind/ahead commit counts.
-If you've used GitHub, you'll notice their branches page displays this info. This is that,
-but for your local git repo, in the terminal.
+The git-branches command displays branches with behind/ahead commit counts.
+If you've used GitHub, you'll notice their branches page displays this info.
+This is that, but for your local git repo, in the terminal.
 
 Go to any git repo you're working on and type:
 
@@ -11,7 +11,7 @@ Go to any git repo you're working on and type:
 	  unfinished-attempt/alternative-sort
 	  wip/get-tweet-body
 
-Now, run `go get -u github.com/shurcooL/git-branches` on any machine with Go installed, and then:
+Now, run `go install github.com/shurcooL/git-branches@latest` on any machine with Go installed, and then:
 
 	$ git-branches
 	| Branch                              | Base   | Behind | Ahead |
