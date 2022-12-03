@@ -18,7 +18,7 @@ const (
 	eightWeeks    = 8 * (7 * 24 * time.Hour)
 )
 
-// branches returns a Markdown table of branches with ahead/behind information relative to master branch,
+// branches returns a Markdown table of branches with ahead/behind information relative to the main branch,
 // for a git repository in dir. baseBranch is base branch to compare against, and is never hidden as stale.
 func branches(dir string, baseBranch string) (_ string, staleBranches int, _ error) {
 	git, err := vcsstate.NewVCS(vcs.ByCmd("git"))
@@ -33,7 +33,7 @@ func branches(dir string, baseBranch string) (_ string, staleBranches int, _ err
 	// remote, if any, is canonical. So just use the provided base branch.
 
 	// line is tab-separated local branch, commiter date.
-	// E.g., "master\t2016-03-03 15:01:11 -0800".
+	// E.g., "main\t2016-03-03 15:01:11 -0800".
 	branchInfo := func(line []byte) []byte {
 		branchDate := strings.Split(strings.TrimSuffix(string(line), "\n"), "\t")
 		if len(branchDate) != 2 {
@@ -108,7 +108,7 @@ func branchesRemote(dir string, baseBranch string) (_ string, staleBranches int,
 	// remote, if any, is canonical. So just use the provided base branch.
 
 	// line is tab-separated local branch, remote branch, commiter date.
-	// E.g., "master\torigin/master\t2016-03-03 15:01:11 -0800".
+	// E.g., "main\torigin/main\t2016-03-03 15:01:11 -0800".
 	branchRemoteInfo := func(line []byte) []byte {
 		branchRemoteDate := strings.Split(strings.TrimSuffix(string(line), "\n"), "\t")
 		if len(branchRemoteDate) != 3 {

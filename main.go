@@ -13,7 +13,7 @@ import (
 )
 
 var (
-	baseFlag = flag.String("base", "master", "base branch to compare against locally")
+	baseFlag = flag.String("base", "main", "base branch to compare against locally")
 	allFlag  = flag.Bool("all", false, `display all branches, including stale (>= 8 weeks old) and trashed ("trash/" prefix)`)
 )
 
