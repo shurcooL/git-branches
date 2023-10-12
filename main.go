@@ -35,7 +35,7 @@ func run() error {
 	if err != nil {
 		return err
 	}
-	dir, err := fromDir(cwd)
+	dir, err := gitRoot(cwd)
 	if err != nil {
 		return err
 	}
@@ -82,13 +82,15 @@ func run() error {
 	return nil
 }
 
-// fromDir inspects dir and its parents to determine if it's inside a git repository.
+// gitRoot inspects dir and its parents to determine if it's inside a git repository.
 // On return, root is the path corresponding to the root of the repository.
-func fromDir(dir string) (root string, err error) {
+func gitRoot(dir string) (root string, err error) {
 	dir = filepath.Clean(dir)
+	origDir := dir
 
 	for {
-		if fi, err := os.Stat(filepath.Join(dir, ".git")); err == nil && fi.IsDir() {
+		// Accept .git as a directory (common case) and a regular file (e.g., a git worktree).
+		if fi, err := os.Stat(filepath.Join(dir, ".git")); err == nil && (fi.IsDir() || fi.Mode().IsRegular()) {
 			return dir, nil
 		}
 
@@ -100,5 +102,5 @@ func fromDir(dir string) (root string, err error) {
 		dir = ndir
 	}
 
-	return "", fmt.Errorf("directory %q is not using git", dir)
+	return "", fmt.Errorf("directory %q is not using git", origDir)
 }
